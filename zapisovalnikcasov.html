@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<!--
+The MIT License (MIT)
+
+Copyright (c) 2025 Andrej Škraba
+Laboratorij za kibernetiko in sisteme za podporo odločanju
+Univerza v Mariboru | Fakulteta za organizacijske vede vede
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+
+<html>
+<head>
+<meta charset="utf-8">
+<title>Zapisovalnik časov</title>
+
+<p></p>
+<canvas id="platno1" width="800" height="22" style="border: 1px dashed #099999;"></canvas>
+<p></p>
+
+<style type="text/css">
+body {
+    font-family: Courier;
+    font-size: 12px;
+}
+
+#clr {
+    clear: both;
+}
+
+.izpis {
+    float: left;
+    margin-left: 5px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table, th, td {
+    border: 1px dashed black;
+    text-align: left;
+    padding: 5px;
+}
+</style>
+
+</head>
+<body onload="document.getElementById('stevilka').focus();">
+<div id="velika-številka" style="font-size: 24px; font-weight: bold;">°</div>
+<p>Zapisovalnik časov -> pritisni tipko Enter za zapis</p>
+<p></p>
+<table>
+    <tr>
+        <td>Pritisni Enter (+opis):</td>
+        <td><input type="text" size="70" id="stevilka" onkeypress="searchKeyPress(event);" /></td>
+    </tr>
+    <tr>
+        <td>Števec:</td>
+        <td><input type="text" id="stevecPrikaz" value="0" readonly /></td>
+    </tr>
+    <tr>
+        <td>Čas:</td>
+        <td><input type="text" id="txt" readonly /></td>
+    </tr>
+    <tr>
+        <td>Ure:</td>
+        <td><input type="text" id="ure" value="0" readonly /></td>
+    </tr>
+    <tr>
+        <td>Minute:</td>
+        <td><input type="text" id="minute" value="0" readonly /></td>
+    </tr>
+    <tr>
+        <td>Sekunde:</td>
+        <td><input type="text" id="sekunde" value="0" readonly /></td>
+    </tr>
+    <tr>
+        <td>Milisekunde:</td>
+        <td><input type="text" id="stotinke" value="0" readonly /></td>
+    </tr>
+</table>
+
+<p></p>
+<- Tabela časov ->
+<p></p>
+<table id="tabela">
+    <thead>
+        <tr>
+            <th>Zaporedna številka</th>
+            <th>Ura</th>
+            <th>Minuta</th>
+            <th>Sekunda</th>
+            <th>Milisekunda</th>
+            <th>Opis</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<p></p>
+<- Konec tabele časov ->
+<p style="font-size: 10px;">
+    Laboratorij za kibernetiko in sisteme za podporo odločanju | Univerza v Mariboru | Fakulteta za organizacijske vede    
+</p>
+
+<script type="text/javascript">
+
+// Zaznamo pritisk gumba "Enter" kjerkoli izven vnosnega polja
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        const activeElement = document.activeElement;
+        if (activeElement.id !== 'stevilka') {
+            const ure = new Date().getHours();
+            const minute = new Date().getMinutes();
+            const sekunde = new Date().getSeconds();
+            const milisekunde = new Date().getMilliseconds();
+            const vrednost = document.getElementById("stevilka").value || "0";
+            const vrednostNumerična = isNaN(Number(vrednost)) ? 0 : Number(vrednost); // pretvorimo vnos uporabnika v številko, če ne gre bo vrednostNumerična enaka 0
+
+            document.getElementById("ure").value = ure;
+            document.getElementById("minute").value = minute;
+            document.getElementById("sekunde").value = sekunde;
+            document.getElementById("stotinke").value = milisekunde;
+
+            steviloZapisov++;
+            document.getElementById('stevecPrikaz').value = steviloZapisov;
+            document.getElementById('velika-številka').innerHTML = steviloZapisov;
+
+            dodajVrstico("tabela", [steviloZapisov, ure, minute, sekunde, milisekunde, vrednost]);
+            dodajAgenta(steviloZapisov, vrednostNumerična);
+            document.getElementById("stevilka").value = "";
+        }
+    }
+});
+
+
+let t;
+let steviloZapisov = 0;
+
+function oblaziniZničlo(num) {
+    return num.toString().padStart(2, '0');
+}
+
+function casovnoStetje() {
+    const now = new Date();
+    const hours = oblaziniZničlo(now.getHours());
+    const minutes = oblaziniZničlo(now.getMinutes());
+    const seconds = oblaziniZničlo(now.getSeconds());
+    const time = hours + ":" + minutes + ":" + seconds;
+    document.getElementById('txt').value = time;
+    t = setTimeout(casovnoStetje, 1000);
+}
+
+function searchKeyPress(e) {
+    if (e.keyCode === 13) {
+        const ure = new Date().getHours();
+        const minute = new Date().getMinutes();
+        const sekunde = new Date().getSeconds();
+        const milisekunde = new Date().getMilliseconds();
+        const vrednost = document.getElementById("stevilka").value || "0";
+        const vrednostNumerična = isNaN(Number(vrednost)) ? 0 : Number(vrednost); // pretvorimo vnos uporabnika v številko, če ne gre bo vrednostNumerična enaka 0
+        
+
+        document.getElementById("ure").value = ure;
+        document.getElementById("minute").value = minute;
+        document.getElementById("sekunde").value = sekunde;
+        document.getElementById("stotinke").value = milisekunde;
+
+        steviloZapisov++;
+        document.getElementById('stevecPrikaz').value = steviloZapisov;
+        document.getElementById('velika-številka').innerHTML = steviloZapisov;
+
+        dodajVrstico("tabela", [steviloZapisov, ure, minute, sekunde, milisekunde, vrednost]);
+        dodajAgenta(steviloZapisov, vrednostNumerična);
+        document.getElementById("stevilka").value = "";
+    }
+}
+
+function dodajVrstico(idTabele, niz) {
+    const tabelaRef = document.getElementById(idTabele);
+    const novaVrstica = tabelaRef.insertRow();
+
+    niz.forEach((vrednost) => {
+        const novaCelica = novaVrstica.insertCell();
+        const novoBesedilo = document.createTextNode(vrednost);
+        novaCelica.appendChild(novoBesedilo);
+    });
+}
+
+casovnoStetje();
+
+var can1, plat1; // deklariramo dve novi spremenljivki za platno ("canvas") in kontekst ctx -> plat1
+
+// "boilerplate" koda za platno
+can1 = document.getElementById("platno1"); // v html delu poiščemo platno1; spremenljivka can1 sedaj predstavlja platno1
+plat1 = can1.getContext("2d"); // od tu dalje delamo s spremenljivo plat1 (za izris na platnu iz id "platno1")
+var agentiTabela = []; // spremenljivka s tabelo ("Array") agentov (polje agentov)
+
+plat1.fillStyle = "#ff0000"; // določimo barvo polnila, hex oblika #RRGGBB
+
+class Agent {
+    constructor(x, xVel, id, vrednostNumerična) { // konstruktorska funkcija (ustvari agenta, t.j. poda pozicijo x, y ter hitrosti xVel, yVel)
+        this.x = x; // spremenjivka za x koordinato
+        this.xVel = xVel; // sprememba x koordinate (dx - diferenca x-a)
+        this.id = id;
+        this.barva = this.določiBarvo(vrednostNumerična); // določi barvo na podlagi vrednostNumerična
+}
+
+// Metoda za določitev barve
+določiBarvo(vrednostNumerična) {
+    const barve = [
+        "#ff0000", // 0 rdeča
+        "#00ff00", // 1 zelena
+        "#0000ff", // 2 modra
+        "#ffff00", // 3 rumena
+        "#ffa500", // 4 oranžna
+        "#800080", // 5 vijolična
+        "#00ffff", // 6 cian
+        "#ff00ff", // 7 magenta
+        "#a52a2a", // 8 rjava
+        "#ffc0cb"  // 9 roza
+    ];
+
+    // Preveri, ali je vrednostNumerična veljavna, sicer uporabi privzeto barvo
+    return (vrednostNumerična >= 0 && vrednostNumerična <= 9) ? barve[vrednostNumerična] : "#000000";
+}
+
+    osveži () {
+        this.x = this.x + this.xVel;
+
+        if (this.x > 790 ) { // če smo na desni ali levi strani na robu platna
+            odstraniAgenta(); // odstranimo agenta
+        }
+
+    }
+}
+
+function zanka() {
+    plat1.clearRect(0, 0, can1.width, can1.height); // brišemo celotno platno
+
+    // Create a copy of the current agent list to iterate over safely
+    const activeAgents = [...agentiTabela];
+
+    for (let i = 0; i < activeAgents.length; i++) {
+        const agent = activeAgents[i]; // Get the agent
+
+        if (agent) { // Ensure the agent exists
+            agent.osveži(); // Update agent position
+            plat1.fillStyle = agent.barva;
+            plat1.fillRect(agent.x, 2, 10, 10); // Draw the agent
+            plat1.fillStyle = "#000000"; // Text color
+            plat1.font = "10px Arial Narrow";
+            const textWidth = plat1.measureText(agent.id).width; // Measure the width of the text
+            plat1.fillText(agent.id, agent.x + 5 - textWidth / 2, 21); // Center the text beneath the rectangle
+        }
+    }
+
+    // Remove agents marked for removal
+    agentiTabela = agentiTabela.filter(agent => !agent.toBeRemoved);
+
+
+    setTimeout(zanka, 5); // po času 5 ms se izvede funkcija zanka
+}
+
+function dodajAgenta(id, vrednostNumerična) {
+    agentiTabela.push(new Agent(0, 0.9, id, vrednostNumerična));
+}
+
+function odstraniAgenta() {
+    agentiTabela.shift();
+}
+
+zanka();
+
+</script>
+
+</body>
+</html>
